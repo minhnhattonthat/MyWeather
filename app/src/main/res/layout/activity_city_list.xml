@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.nhatton.myweather.CityListActivity">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/pending_req_list"
+        android:name="com.nhatton.myweather.CityListActivity"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="LinearLayoutManager"
+        tools:context=".ui.mainscreen.PendingReqFragment"
+        tools:listitem="@layout/row_city" />
+
+</LinearLayout>
