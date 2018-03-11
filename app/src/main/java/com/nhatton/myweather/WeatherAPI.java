@@ -9,4 +9,6 @@ public class WeatherAPI {
     private static final String API_KEY = "1e7f27cf98fac44b02286ba9e69c4173";
 
     private static final String ROOT_URL = "http://api.openweathermap.org/data/2.5/weather";
+
+    private static final String IMG_ROOT = "http://openweathermap.org/img/w/";
 }
