@@ -1,11 +1,12 @@
-package com.nhatton.myweather;
+package com.nhatton.myweather.db;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.nhatton.myweather.WeatherContract.WeatherEntry;
+import com.nhatton.myweather.WeatherModel;
+import com.nhatton.myweather.db.WeatherContract.WeatherEntry;
 
 /**
  * Created by nhatton on 12/3/18.

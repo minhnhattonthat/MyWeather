@@ -1,4 +1,4 @@
-package com.nhatton.myweather;
+package com.nhatton.myweather.db;
 
 import android.provider.BaseColumns;
 

@@ -21,5 +21,5 @@ public class Cities {
             "Mahwah", "Dausa", "Basi", "Jaipur", "Manoharpur", "Shahpura", "Ciudad Guayana", "Upata",
             "Borovoy", "Vostochnyy", "El Vigia", "Ejido", "Vnukovo", "Obninsk", "Obukhovo",
             "Imeni Vorovskogo", "Elektrostal", "Pavlovskiy Posad", "Drezna", "Opalikha",
-            "Novopetrovskoye", "Verbilki",};
+            "Novopetrovskoye", "Verbilki"};
 }

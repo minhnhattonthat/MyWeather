@@ -1,5 +1,6 @@
 package com.nhatton.myweather;
 
+import android.os.NetworkOnMainThreadException;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -40,8 +41,8 @@ public class RESTClient {
             Log.e(TAG, "ProtocolException: " + e.getMessage());
         } catch (IOException e) {
             Log.e(TAG, "IOException: " + e.getMessage());
-        } catch (Exception e) {
-            Log.e(TAG, "Exception: " + e.getMessage());
+        } catch (NetworkOnMainThreadException e) {
+            Log.e(TAG, "MainThreadException: " + e.getMessage());
         } finally {
             if (conn != null) {
                 conn.disconnect();

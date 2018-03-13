@@ -12,7 +12,7 @@ public class WeatherAPI {
 
     private static final String IMG_ROOT = "http://openweathermap.org/img/w/";
 
-    public String getWeatherByCity(String cityName) {
+    public static String getWeatherByCity(String cityName) {
         String url = String.format("%s?q=%s&appid=%s", ROOT_URL, cityName, API_KEY);
         RESTClient client = new RESTClient();
         return client.get(url);
