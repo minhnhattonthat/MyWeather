@@ -6,16 +6,40 @@
     android:layout_height="match_parent"
     tools:context="com.nhatton.myweather.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/empty_text"
-        style="@style/TextAppearance.AppCompat.Large"
-        android:textSize="40sp"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                style="@style/TextAppearance.AppCompat.Large"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/empty_text"
+                android:textSize="40sp" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/weather_list"
+                android:name="com.nhatton.myweather.MainActivity"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorPrimary"
+                app:layoutManager="LinearLayoutManager"
+                tools:context=".ui.mainscreen.PendingReqFragment"
+                tools:listitem="@layout/row_weather" />
+        </FrameLayout>
+
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

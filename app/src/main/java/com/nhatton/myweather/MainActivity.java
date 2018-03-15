@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 
@@ -17,10 +18,14 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_GET_LIST = 5;
 
+    private RecyclerView weatherListView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        weatherListView = findViewById(R.id.weather_list);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -30,6 +35,15 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent, REQUEST_GET_LIST);
             }
         });
+
+        WeatherAdapter adapter = new WeatherAdapter(2);
+        weatherListView.setAdapter(adapter);
+
+        WeatherLoader loader = new WeatherLoader(adapter, this);
+        ArrayList<String> selectedCities = new ArrayList<>();
+        selectedCities.add("Hanoi");
+        selectedCities.add("Melbourne");
+        loader.load(selectedCities);
 
     }
 
@@ -51,5 +65,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void checkListEmpty() {
+        boolean isEmpty = weatherListView.getAdapter().getItemCount() == 0;
+        weatherListView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
     }
 }
