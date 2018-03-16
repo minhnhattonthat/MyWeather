@@ -1,6 +1,10 @@
 package com.nhatton.myweather;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Environment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -40,7 +45,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherH
         holder.mItem = mData.get(position);
         if (holder.mItem != null) {
             holder.mCityTextView.setText(holder.mItem.getName());
-//            holder.mWeatherIcon.setImageDrawable(Resources.getSystem().getDrawable(R.drawable.cloud));
+            loadIcon(holder.mItem.getWeather().get(0).getIcon(), holder.mWeatherIcon);
             holder.mTempTextView.setText(String.format("%dºC", holder.mItem.getMain().getRoundedTemp()));
             holder.mMinTempTextView.setText(String.format("%dºC", holder.mItem.getMain().getRoundedTempMin()));
             holder.mMaxTempTextView.setText(String.format("%dºC", holder.mItem.getMain().getRoundedTempMax()));
@@ -48,8 +53,21 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherH
         }
     }
 
+    private void loadIcon(String iconName, ImageView imageView) {
+        String path = Environment.getExternalStorageDirectory().toString();
+        File file = new File(path, iconName + ".png");
+        if(file.exists()) {
+            Bitmap icon = BitmapFactory.decodeFile(file.getPath());
+            imageView.setImageBitmap(icon);
+        }
+    }
+
     public void updateRow(int position, WeatherModel data) {
         mData.set(position, data);
+        notifyItemChanged(position);
+    }
+
+    public void updateRowIcon(int position) {
         notifyItemChanged(position);
     }
 

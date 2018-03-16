@@ -1,8 +1,11 @@
 package com.nhatton.myweather;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -10,6 +13,12 @@ import android.telephony.TelephonyManager;
 
 import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -23,8 +32,11 @@ import java.util.concurrent.TimeUnit;
 public class WeatherLoader {
 
     private static final int DOWNLOAD_COMPLETE = 25;
-    private static final int ALL_DOWNLOAD_COMPLETE = 259;
+    private static final int ICON_COMPLETE = 2509;
+    private static final int ICON_EXIST = 2590;
+    private static final int ALL_DOWNLOAD_COMPLETE = 2592;
 
+    private static final int BITMAP_QUALITY = 85;
     /*
     * Gets the number of available cores
     * (not always the same as the maximum number of cores)
@@ -37,6 +49,7 @@ public class WeatherLoader {
     private static final int KEEP_ALIVE_TIME = 1;
     // Sets the Time Unit to seconds
     private static final TimeUnit KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
+
 
     // A queue of Runnables
     private final BlockingQueue<Runnable> mDownloadWorkQueue;
@@ -70,11 +83,18 @@ public class WeatherLoader {
             @Override
             public void handleMessage(Message msg) {
                 int position = msg.arg1;
-                WeatherModel weather = (WeatherModel) msg.obj;
+                GetWeatherTask task = (GetWeatherTask) msg.obj;
 
                 switch (msg.what) {
                     case DOWNLOAD_COMPLETE:
-                        mAdapter.updateRow(position, weather);
+                        mAdapter.updateRow(position, task.getWeatherModel());
+                        break;
+                    case ICON_COMPLETE:
+                        mAdapter.updateRowIcon(task.getPosition());
+//                        recycleTask(task);
+                        break;
+                    case ICON_EXIST:
+//                        recycleTask(task);
                         break;
                     case ALL_DOWNLOAD_COMPLETE:
                         break;
@@ -86,15 +106,17 @@ public class WeatherLoader {
         };
     }
 
-    public void load(ArrayList<String> cities){
-        for(int i = 0; i < cities.size(); i++) {
+    public void load(ArrayList<String> cities) {
+        for (int i = 0; i < cities.size(); i++) {
             GetWeatherTask task = mGetWeatherTaskQueue.poll();
-            if(null == task) {
-                task = new GetWeatherTask(i, cities.get(i));
+            if (null == task) {
+                task = new GetWeatherTask();
             }
+            task.initialize(i, cities.get(i));
             mDownloadThreadPool.execute(task);
         }
     }
+
     /**
      * Recycles tasks by calling their internal recycle() method and then putting them back into
      * the task queue.
@@ -165,8 +187,13 @@ public class WeatherLoader {
 
         private String mTarget;
         private int mPosition;
+        private WeatherModel mWeather;
 
-        public GetWeatherTask(int position, String city) {
+        public GetWeatherTask() {
+
+        }
+
+        public void initialize(int position, String city) {
             mTarget = city;
             mPosition = position;
         }
@@ -175,14 +202,58 @@ public class WeatherLoader {
         public void run() {
             String response = WeatherAPI.getWeatherByCity(mTarget);
             Gson gson = new Gson();
-            WeatherModel weather = gson.fromJson(response, WeatherModel.class);
+            mWeather = gson.fromJson(response, WeatherModel.class);
 
-            Message msg = mHandler.obtainMessage(DOWNLOAD_COMPLETE, mPosition, 0, weather);
+            Message msg = mHandler.obtainMessage(DOWNLOAD_COMPLETE, mPosition, 0,this);
             msg.sendToTarget();
+
+            if (saveIconToLocal()) {
+                msg = mHandler.obtainMessage(ICON_COMPLETE, this);
+                msg.sendToTarget();
+            } else {
+                msg = mHandler.obtainMessage(ICON_EXIST, this);
+                msg.sendToTarget();
+            }
+
+        }
+
+        private boolean saveIconToLocal() {
+            String path = Environment.getExternalStorageDirectory().toString();
+            String iconName = mWeather.getWeather().get(0).getIcon() + ".png";
+            String url = WeatherAPI.IMG_ROOT + iconName;
+
+            try {
+                File file = new File(path, iconName);
+                if (file.exists()) {
+                    return false;
+                } else {
+                    InputStream is = new URL(url).openStream();
+                    Bitmap icon = BitmapFactory.decodeStream(is);
+                    is.close();
+
+                    OutputStream os = new FileOutputStream(file);
+                    icon.compress(Bitmap.CompressFormat.PNG, BITMAP_QUALITY, os);
+                    os.flush();
+                    os.close();
+                    return true;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        public int getPosition() {
+            return mPosition;
+        }
+
+        public WeatherModel getWeatherModel() {
+            return mWeather;
         }
 
         void recycle() {
-
+            mPosition = -1;
+            mWeather = null;
         }
     }
 }
