@@ -1,5 +1,8 @@
 package com.nhatton.myweather;
 
+import com.google.gson.annotations.SerializedName;
+import com.nhatton.myweather.utils.DateConvertHelper;
+
 import java.util.List;
 
 /**
@@ -10,9 +13,10 @@ public class WeatherModel {
     private Coord coord;
     private List<Weather> weather = null;
     private String base;
+    private Main main;
 
     private Wind wind;
-    private int dt;
+    private long dt;
     private int id;
     private String name;
     private int cod;
@@ -41,6 +45,14 @@ public class WeatherModel {
         this.base = base;
     }
 
+    public Main getMain() {
+        return main;
+    }
+
+    public void setMain(Main main) {
+        this.main = main;
+    }
+
     public Wind getWind() {
         return wind;
     }
@@ -49,11 +61,15 @@ public class WeatherModel {
         this.wind = wind;
     }
 
-    public int getDt() {
+    public long getDt() {
         return dt;
     }
 
-    public void setDt(int dt) {
+    public String getDtInString() {
+        return DateConvertHelper.convertToDate(dt);
+    }
+
+    public void setDt(long dt) {
         this.dt = dt;
     }
 
@@ -101,6 +117,70 @@ public class WeatherModel {
         public void setLat(double lat) {
             this.lat = lat;
         }
+    }
+
+    public class Main {
+
+        private double temp;
+        private int pressure;
+        private int humidity;
+        @SerializedName("temp_min")
+        private double tempMin;
+        @SerializedName("temp_max")
+        private double tempMax;
+
+        public double getTemp() {
+            return temp;
+        }
+
+        public int getRoundedTemp() {
+            return (int) Math.round(temp);
+        }
+
+        public void setTemp(double temp) {
+            this.temp = temp;
+        }
+
+        public int getPressure() {
+            return pressure;
+        }
+
+        public void setPressure(int pressure) {
+            this.pressure = pressure;
+        }
+
+        public int getHumidity() {
+            return humidity;
+        }
+
+        public void setHumidity(int humidity) {
+            this.humidity = humidity;
+        }
+
+        public double getTempMin() {
+            return tempMin;
+        }
+
+        public int getRoundedTempMin() {
+            return (int) Math.round(tempMin);
+        }
+
+        public void setTempMin(double tempMin) {
+            this.tempMin = tempMin;
+        }
+
+        public double getTempMax() {
+            return tempMax;
+        }
+
+        public int getRoundedTempMax() {
+            return (int) Math.round(tempMax);
+        }
+
+        public void setTempMax(double tempMax) {
+            this.tempMax = tempMax;
+        }
+
     }
 
     public class Wind {

@@ -47,8 +47,6 @@ public class WeatherLoader {
 
     private Handler mHandler;
 
-    private static WeatherLoader sInstance;
-
     private WeatherAdapter mAdapter;
     private Context mContext;
 

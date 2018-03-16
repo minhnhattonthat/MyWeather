@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_GET_LIST = 5;
 
     private RecyclerView weatherListView;
+    private WeatherAdapter weatherAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +37,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        WeatherAdapter adapter = new WeatherAdapter(2);
-        weatherListView.setAdapter(adapter);
+        weatherAdapter = new WeatherAdapter(2);
+        weatherListView.setAdapter(weatherAdapter);
 
-        WeatherLoader loader = new WeatherLoader(adapter, this);
+        WeatherLoader loader = new WeatherLoader(weatherAdapter, this);
         ArrayList<String> selectedCities = new ArrayList<>();
         selectedCities.add("Hanoi");
         selectedCities.add("Melbourne");
@@ -67,8 +68,25 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void checkListEmpty() {
+    private void checkListEmptyAndLoad() {
         boolean isEmpty = weatherListView.getAdapter().getItemCount() == 0;
-        weatherListView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        if (isEmpty) {
+            weatherListView.setVisibility(View.GONE);
+        } else {
+            weatherListView.setVisibility(View.VISIBLE);
+            WeatherLoader loader = new WeatherLoader(weatherAdapter, this);
+            ArrayList<String> selectedCities = new ArrayList<>();
+            selectedCities.add("Hanoi");
+            selectedCities.add("Melbourne");
+            loader.load(selectedCities);
+        }
+    }
+
+    private void fetchData(){
+
+    }
+
+    private void loadFromDb(){
+        
     }
 }

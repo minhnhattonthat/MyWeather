@@ -32,7 +32,7 @@ public class WeatherDbAdapter {
         mDbHelper.close();
     }
 
-    long createWeather(WeatherModel model) {
+    long insertWeather(WeatherModel model) {
         // Create a new map of values, where column names are the keys
         ContentValues values = new ContentValues();
         values.put(WeatherEntry.COLUMN_NAME_CITY, model.getName());

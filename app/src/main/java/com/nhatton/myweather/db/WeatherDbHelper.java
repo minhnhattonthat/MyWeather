@@ -21,9 +21,8 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + WeatherEntry.TABLE_NAME;
 
-
-    public static final int DATABASE_VERSION = 1;
-    public static final String DATABASE_NAME = "Weather.db";
+    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "Weather.db";
 
     public WeatherDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
