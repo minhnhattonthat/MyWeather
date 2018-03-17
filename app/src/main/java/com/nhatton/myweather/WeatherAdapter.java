@@ -46,9 +46,9 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherH
         if (holder.mItem != null) {
             holder.mCityTextView.setText(holder.mItem.getName());
             loadIcon(holder.mItem.getWeather().get(0).getIcon(), holder.mWeatherIcon);
-            holder.mTempTextView.setText(String.format("%dºC", holder.mItem.getMain().getRoundedTemp()));
-            holder.mMinTempTextView.setText(String.format("%dºC", holder.mItem.getMain().getRoundedTempMin()));
-            holder.mMaxTempTextView.setText(String.format("%dºC", holder.mItem.getMain().getRoundedTempMax()));
+            holder.mTempTextView.setText(String.format("%dº", holder.mItem.getMain().getRoundedTemp()));
+            holder.mMinTempTextView.setText(String.format("%dº", holder.mItem.getMain().getRoundedTempMin()));
+            holder.mMaxTempTextView.setText(String.format("%dº", holder.mItem.getMain().getRoundedTempMax()));
             holder.mUpdatedTimeTextView.setText(String.format("Updated at: %s", holder.mItem.getDtInString()));
         }
     }

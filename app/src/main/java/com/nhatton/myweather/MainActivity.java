@@ -8,9 +8,9 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -24,8 +24,10 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_GET_LIST = 5;
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 0;
 
+    private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView weatherListView;
     private WeatherAdapter weatherAdapter;
+    private ArrayList<String> selectedCities;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,11 +55,15 @@ public class MainActivity extends AppCompatActivity {
             weatherAdapter = new WeatherAdapter(2);
             weatherListView.setAdapter(weatherAdapter);
 
-            WeatherLoader loader = new WeatherLoader(weatherAdapter, this);
-            ArrayList<String> selectedCities = new ArrayList<>();
-            selectedCities.add("Hanoi");
-            selectedCities.add("Melbourne");
-            loader.load(selectedCities);
+            swipeRefreshLayout = findViewById(R.id.swipe_layout);
+            swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    checkListEmptyAndLoad();
+                }
+            });
+
+            checkListEmptyAndLoad();
         }
 
     }
@@ -65,19 +71,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_GET_LIST && resultCode == RESULT_OK) {
-            ArrayList<String> list = data.getStringArrayListExtra(CITY_LIST_KEY);
-            for (final String city : list) {
-
-                Thread t = new Thread() {
-                    @Override
-                    public void run() {
-                        String result = WeatherAPI.getWeatherByCity(city);
-                        Log.d(TAG, city + ": " + result);
-                    }
-                };
-
-                t.start();
-            }
+            selectedCities = data.getStringArrayListExtra(CITY_LIST_KEY);
+            checkListEmptyAndLoad();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -97,10 +92,13 @@ public class MainActivity extends AppCompatActivity {
         } else {
             weatherListView.setVisibility(View.VISIBLE);
             WeatherLoader loader = new WeatherLoader(weatherAdapter, this);
-            ArrayList<String> selectedCities = new ArrayList<>();
+            selectedCities = new ArrayList<>();
             selectedCities.add("Hanoi");
             selectedCities.add("Melbourne");
             loader.load(selectedCities);
+        }
+        if (swipeRefreshLayout.isRefreshing()) {
+            swipeRefreshLayout.setRefreshing(false);
         }
     }
 

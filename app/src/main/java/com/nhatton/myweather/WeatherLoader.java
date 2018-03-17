@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.telephony.TelephonyManager;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -22,6 +23,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -107,6 +109,8 @@ public class WeatherLoader {
     }
 
     public void load(ArrayList<String> cities) {
+        tuneConnection();
+
         for (int i = 0; i < cities.size(); i++) {
             GetWeatherTask task = mGetWeatherTaskQueue.poll();
             if (null == task) {
@@ -115,6 +119,9 @@ public class WeatherLoader {
             task.initialize(i, cities.get(i));
             mDownloadThreadPool.execute(task);
         }
+//        mDownloadThreadPool.shutdown();
+//        mDownloadThreadPool = new ThreadPoolExecutor(NUMBER_OF_CORES, MAXIMUM_POOL_SIZE,
+//                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, new LinkedBlockingQueue<Runnable>());
     }
 
     /**
@@ -126,7 +133,7 @@ public class WeatherLoader {
     private void recycleTask(GetWeatherTask getWeatherTask) {
 
         // Frees up memory in the task
-        getWeatherTask.recycle();
+//        getWeatherTask.recycle();
 
         // Puts the task object back into the queue for re-use.
         mDownloadWorkQueue.offer(getWeatherTask);
@@ -137,6 +144,9 @@ public class WeatherLoader {
         if (cm != null) {
             NetworkInfo networkInfo = cm.getActiveNetworkInfo();
             adjustThreadCount(networkInfo);
+            if(mAdapter.getItemCount() < mDownloadThreadPool.getCorePoolSize()) {
+                mDownloadThreadPool.setCorePoolSize(mAdapter.getItemCount());
+            }
         }
     }
 
@@ -203,16 +213,19 @@ public class WeatherLoader {
             String response = WeatherAPI.getWeatherByCity(mTarget);
             Gson gson = new Gson();
             mWeather = gson.fromJson(response, WeatherModel.class);
-
-            Message msg = mHandler.obtainMessage(DOWNLOAD_COMPLETE, mPosition, 0,this);
-            msg.sendToTarget();
-
-            if (saveIconToLocal()) {
-                msg = mHandler.obtainMessage(ICON_COMPLETE, this);
+            if(mWeather != null) {
+                Message msg = mHandler.obtainMessage(DOWNLOAD_COMPLETE, mPosition, 0, this);
                 msg.sendToTarget();
+
+                if (saveIconToLocal()) {
+                    msg = mHandler.obtainMessage(ICON_COMPLETE, this);
+                    msg.sendToTarget();
+                } else {
+                    msg = mHandler.obtainMessage(ICON_EXIST, this);
+                    msg.sendToTarget();
+                }
             } else {
-                msg = mHandler.obtainMessage(ICON_EXIST, this);
-                msg.sendToTarget();
+                Toast.makeText(mContext, response, Toast.LENGTH_SHORT).show();
             }
 
         }

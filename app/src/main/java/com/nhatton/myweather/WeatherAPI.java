@@ -6,7 +6,7 @@ package com.nhatton.myweather;
 
 public class WeatherAPI {
 
-    private static final String API_KEY = "1e7f27cf98fac44b02286ba9e69c4173";
+    private static final String API_KEY = "a8e56c2943b3f8d56f4c4a4def6245f8";
 
     private static final String ROOT_URL = "http://api.openweathermap.org/data/2.5/weather";
 
