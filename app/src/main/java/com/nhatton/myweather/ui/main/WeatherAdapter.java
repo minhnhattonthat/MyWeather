@@ -1,9 +1,8 @@
-package com.nhatton.myweather;
+package com.nhatton.myweather.ui.main;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Environment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,6 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.nhatton.myweather.R;
+import com.nhatton.myweather.db.model.WeatherDomain;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,7 +24,7 @@ import java.util.ArrayList;
 public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherHolder> {
 
     private int mCount;
-    private ArrayList<WeatherModel> mData;
+    private ArrayList<WeatherDomain> mData;
 
     public WeatherAdapter(int count) {
         mCount = count;
@@ -44,12 +46,12 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherH
     public void onBindViewHolder(WeatherHolder holder, int position) {
         holder.mItem = mData.get(position);
         if (holder.mItem != null) {
-            holder.mCityTextView.setText(holder.mItem.getName());
-            loadIcon(holder.mItem.getWeather().get(0).getIcon(), holder.mWeatherIcon);
-            holder.mTempTextView.setText(String.format("%dº", holder.mItem.getMain().getRoundedTemp()));
-            holder.mMinTempTextView.setText(String.format("%dº", holder.mItem.getMain().getRoundedTempMin()));
-            holder.mMaxTempTextView.setText(String.format("%dº", holder.mItem.getMain().getRoundedTempMax()));
-            holder.mUpdatedTimeTextView.setText(String.format("Updated at: %s", holder.mItem.getDtInString()));
+            holder.mCityTextView.setText(holder.mItem.getCity());
+            loadIcon(holder.mItem.getIcon(), holder.mWeatherIcon);
+            holder.mTempTextView.setText(String.format("%dº", holder.mItem.getRoundedTemp()));
+            holder.mMinTempTextView.setText(String.format("%dº", holder.mItem.getRoundedTempMin()));
+            holder.mMaxTempTextView.setText(String.format("%dº", holder.mItem.getRoundedTempMax()));
+            holder.mUpdatedTimeTextView.setText(String.format("Updated at: %s", holder.mItem.getTimeStampInString()));
         }
     }
 
@@ -62,7 +64,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherH
         }
     }
 
-    public void updateRow(int position, WeatherModel data) {
+    public void updateRow(int position, WeatherDomain data) {
         mData.set(position, data);
         notifyItemChanged(position);
     }
@@ -84,7 +86,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherH
         final TextView mMinTempTextView;
         final TextView mMaxTempTextView;
         final TextView mUpdatedTimeTextView;
-        WeatherModel mItem;
+        WeatherDomain mItem;
 
         WeatherHolder(View view) {
             super(view);

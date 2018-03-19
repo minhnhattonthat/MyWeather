@@ -1,4 +1,4 @@
-package com.nhatton.myweather;
+package com.nhatton.myweather.network;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,9 +10,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.telephony.TelephonyManager;
+import android.util.Log;
+import android.util.SparseArray;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.nhatton.myweather.db.model.WeatherDomain;
+import com.nhatton.myweather.network.model.WeatherModel;
+import com.nhatton.myweather.ui.main.WeatherAdapter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,6 +37,14 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class WeatherLoader {
+
+    public interface WeatherLoadListener {
+        void onLoadComplete(ArrayList<WeatherDomain> cacheList);
+
+        void onLoadError(String error);
+    }
+
+    private static final String TAG = "WeatherLoader";
 
     private static final int DOWNLOAD_COMPLETE = 25;
     private static final int ICON_COMPLETE = 2509;
@@ -62,12 +75,18 @@ public class WeatherLoader {
 
     private Handler mHandler;
 
+    private WeatherLoadListener mListener;
+
     private WeatherAdapter mAdapter;
+
     private Context mContext;
 
-    public WeatherLoader(WeatherAdapter adapter, Context context) {
+    private ArrayList<WeatherDomain> cacheList;
+
+    public WeatherLoader(WeatherAdapter adapter, Context context, WeatherLoadListener listener) {
         mAdapter = adapter;
         mContext = context;
+        mListener = listener;
 
         mDownloadWorkQueue = new LinkedBlockingDeque<>();
 
@@ -89,16 +108,14 @@ public class WeatherLoader {
 
                 switch (msg.what) {
                     case DOWNLOAD_COMPLETE:
-                        mAdapter.updateRow(position, task.getWeatherModel());
+                        mAdapter.updateRow(position, task.getWeatherDomain());
                         break;
                     case ICON_COMPLETE:
                         mAdapter.updateRowIcon(task.getPosition());
-//                        recycleTask(task);
+                        recycleTask(task);
                         break;
                     case ICON_EXIST:
-//                        recycleTask(task);
-                        break;
-                    case ALL_DOWNLOAD_COMPLETE:
+                        recycleTask(task);
                         break;
                     default:
                         super.handleMessage(msg);
@@ -108,7 +125,40 @@ public class WeatherLoader {
         };
     }
 
+    public void load(SparseArray<String> citiesMap) {
+        cacheList = new ArrayList<>();
+
+        tuneConnection();
+
+        for (int i = 0; i < citiesMap.size(); i++) {
+
+            int position = citiesMap.keyAt(i);
+
+            GetWeatherTask task = mGetWeatherTaskQueue.poll();
+            if (null == task) {
+                task = new GetWeatherTask();
+            }
+            task.initialize(position, citiesMap.get(position));
+            mDownloadThreadPool.execute(task);
+        }
+        mDownloadThreadPool.shutdown();
+
+        try {
+            mDownloadThreadPool.awaitTermination(mAdapter.getItemCount() * 10, TimeUnit.SECONDS);
+            mListener.onLoadComplete(cacheList);
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            mListener.onLoadError(e.getMessage());
+        }
+
+        mDownloadThreadPool = new ThreadPoolExecutor(NUMBER_OF_CORES, MAXIMUM_POOL_SIZE,
+                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, new LinkedBlockingQueue<Runnable>());
+    }
+
     public void load(ArrayList<String> cities) {
+        cacheList = new ArrayList<>();
+
         tuneConnection();
 
         for (int i = 0; i < cities.size(); i++) {
@@ -119,9 +169,19 @@ public class WeatherLoader {
             task.initialize(i, cities.get(i));
             mDownloadThreadPool.execute(task);
         }
-//        mDownloadThreadPool.shutdown();
-//        mDownloadThreadPool = new ThreadPoolExecutor(NUMBER_OF_CORES, MAXIMUM_POOL_SIZE,
-//                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, new LinkedBlockingQueue<Runnable>());
+        mDownloadThreadPool.shutdown();
+
+        try {
+            mDownloadThreadPool.awaitTermination(mAdapter.getItemCount() * 10, TimeUnit.SECONDS);
+            mListener.onLoadComplete(cacheList);
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            mListener.onLoadError(e.getMessage());
+        }
+
+        mDownloadThreadPool = new ThreadPoolExecutor(NUMBER_OF_CORES, MAXIMUM_POOL_SIZE,
+                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, new LinkedBlockingQueue<Runnable>());
     }
 
     /**
@@ -133,7 +193,7 @@ public class WeatherLoader {
     private void recycleTask(GetWeatherTask getWeatherTask) {
 
         // Frees up memory in the task
-//        getWeatherTask.recycle();
+        getWeatherTask.recycle();
 
         // Puts the task object back into the queue for re-use.
         mDownloadWorkQueue.offer(getWeatherTask);
@@ -144,7 +204,7 @@ public class WeatherLoader {
         if (cm != null) {
             NetworkInfo networkInfo = cm.getActiveNetworkInfo();
             adjustThreadCount(networkInfo);
-            if(mAdapter.getItemCount() < mDownloadThreadPool.getCorePoolSize()) {
+            if (mAdapter.getItemCount() < mDownloadThreadPool.getCorePoolSize()) {
                 mDownloadThreadPool.setCorePoolSize(mAdapter.getItemCount());
             }
         }
@@ -197,7 +257,7 @@ public class WeatherLoader {
 
         private String mTarget;
         private int mPosition;
-        private WeatherModel mWeather;
+        private WeatherDomain mWeather;
 
         public GetWeatherTask() {
 
@@ -210,10 +270,18 @@ public class WeatherLoader {
 
         @Override
         public void run() {
+            Log.i(TAG, "Getting weather data for " + mTarget);
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+
             String response = WeatherAPI.getWeatherByCity(mTarget);
             Gson gson = new Gson();
-            mWeather = gson.fromJson(response, WeatherModel.class);
-            if(mWeather != null) {
+            WeatherModel weatherModel = gson.fromJson(response, WeatherModel.class);
+
+            if (weatherModel != null) {
+                mWeather = new WeatherDomain(weatherModel);
+
+                cacheList.add(mWeather);
+
                 Message msg = mHandler.obtainMessage(DOWNLOAD_COMPLETE, mPosition, 0, this);
                 msg.sendToTarget();
 
@@ -228,11 +296,12 @@ public class WeatherLoader {
                 Toast.makeText(mContext, response, Toast.LENGTH_SHORT).show();
             }
 
+            Thread.interrupted();
         }
 
         private boolean saveIconToLocal() {
             String path = Environment.getExternalStorageDirectory().toString();
-            String iconName = mWeather.getWeather().get(0).getIcon() + ".png";
+            String iconName = mWeather.getIcon() + ".png";
             String url = WeatherAPI.IMG_ROOT + iconName;
 
             try {
@@ -252,6 +321,7 @@ public class WeatherLoader {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                mListener.onLoadError(e.getMessage());
                 return false;
             }
         }
@@ -260,7 +330,7 @@ public class WeatherLoader {
             return mPosition;
         }
 
-        public WeatherModel getWeatherModel() {
+        public WeatherDomain getWeatherDomain() {
             return mWeather;
         }
 

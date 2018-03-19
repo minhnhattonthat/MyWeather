@@ -13,7 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/WeatherTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".ui.main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -21,8 +21,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CityListActivity"
-            android:parentActivityName=".MainActivity" />
+            android:name=".ui.citylist.CityListActivity"
+            android:parentActivityName=".ui.main.MainActivity" />
     </application>
 
 </manifest>

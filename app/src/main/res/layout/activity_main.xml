@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.nhatton.myweather.MainActivity">
+    tools:context="com.nhatton.myweather.ui.main.MainActivity">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_layout"
@@ -38,9 +38,7 @@
                 tools:listitem="@layout/row_weather" />
         </FrameLayout>
 
-
     </android.support.v4.widget.SwipeRefreshLayout>
-
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -49,6 +47,7 @@
         android:layout_marginBottom="24dp"
         android:layout_marginEnd="24dp"
         android:src="@drawable/ic_plus"
+        android:backgroundTint="@color/colorYellow"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

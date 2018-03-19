@@ -6,7 +6,7 @@ package com.nhatton.myweather;
 
 public class Cities {
 
-    public static final String[] CITIES = {"Ho Chi Minh City", "Hanoi", "London", "Melbourne", "Razvilka",
+    public static final String[] CITIES = {"Ho Chi Minh City", "Ha Noi", "London", "Melbourne",
             "Razvilka", "Moscow", "Firozpur Jhirka", "Kathmandu", "Kiev", "Pokhara", "Merida", "Delhi",
             "Reshetnikovo", "Ciudad Bolivar", "Marfino", "Zhukovskiy", "Reutov", "Kurovskoye",
             "Zheleznodorozhnyy", "Golitsyno", "Petrozavodsk", "Saint Petersburg", "Klimovsk",

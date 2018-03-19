@@ -4,9 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.nhatton.myweather.CityListActivity">
+    tools:context="com.nhatton.myweather.ui.citylist.CityListActivity">
 
     <ListView
+        android:divider="@null"
         android:id="@+id/city_list"
         android:name="com.nhatton.myweather.CityListActivity"
         android:layout_width="match_parent"

@@ -14,8 +14,12 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
 
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + WeatherEntry.TABLE_NAME + " (" +
-                    WeatherEntry._ID + " INTEGER PRIMARY KEY," +
-                    WeatherEntry.COLUMN_NAME_CITY + " TEXT," +
+                    WeatherEntry._ID + " INTEGER PRIMARY KEY, " +
+                    WeatherEntry.COLUMN_NAME_CITY + " TEXT, " +
+                    WeatherEntry.COLUMN_NAME_ICON + " TEXT, " +
+                    WeatherEntry.COLUMN_NAME_TEMP + " REAL, " +
+                    WeatherEntry.COLUMN_NAME_TEMP_MIN + " REAL, " +
+                    WeatherEntry.COLUMN_NAME_TEMP_MAX + " REAL, " +
                     WeatherEntry.COLUMN_NAME_TIMESTAMP + " INTEGER)";
 
     private static final String SQL_DELETE_ENTRIES =

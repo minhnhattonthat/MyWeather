@@ -1,4 +1,4 @@
-package com.nhatton.myweather;
+package com.nhatton.myweather.network;
 
 import android.os.NetworkOnMainThreadException;
 import android.util.Log;

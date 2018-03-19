@@ -1,4 +1,6 @@
-package com.nhatton.myweather;
+package com.nhatton.myweather.network;
+
+import com.nhatton.myweather.network.RESTClient;
 
 /**
  * Created by nhatton on 11/3/18.

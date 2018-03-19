@@ -1,4 +1,4 @@
-package com.nhatton.myweather;
+package com.nhatton.myweather.network.model;
 
 import com.google.gson.annotations.SerializedName;
 import com.nhatton.myweather.utils.DateConvertHelper;
@@ -122,7 +122,7 @@ public class WeatherModel {
     public class Main {
 
         private double temp;
-        private int pressure;
+        private double pressure;
         private int humidity;
         @SerializedName("temp_min")
         private double tempMin;
@@ -141,11 +141,11 @@ public class WeatherModel {
             this.temp = temp;
         }
 
-        public int getPressure() {
+        public double getPressure() {
             return pressure;
         }
 
-        public void setPressure(int pressure) {
+        public void setPressure(double pressure) {
             this.pressure = pressure;
         }
 
@@ -186,7 +186,7 @@ public class WeatherModel {
     public class Wind {
 
         private double speed;
-        private int deg;
+        private double deg;
 
         public double getSpeed() {
             return speed;
@@ -196,11 +196,11 @@ public class WeatherModel {
             this.speed = speed;
         }
 
-        public int getDeg() {
+        public double getDeg() {
             return deg;
         }
 
-        public void setDeg(int deg) {
+        public void setDeg(double deg) {
             this.deg = deg;
         }
     }

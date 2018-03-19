@@ -29,6 +29,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/weather_icon"
@@ -41,6 +42,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginTop="16dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/max_temp_text"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="20º" />
@@ -69,12 +71,11 @@
         android:id="@+id/updated_time_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/colorSecondary"
         app:layout_constraintBaseline_toBaselineOf="@+id/city_text"
-        app:layout_constraintEnd_toEndOf="@+id/max_temp_text"
-        app:layout_constraintStart_toStartOf="@+id/min_temp_text"
-        tools:text="Updated at: 6:35PM" />
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="Updated at: 18:35" />
 
 </android.support.constraint.ConstraintLayout>
