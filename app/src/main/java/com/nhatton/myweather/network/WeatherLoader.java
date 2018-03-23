@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 public class WeatherLoader {
 
     public interface WeatherLoadListener {
-        void onLoadComplete(ArrayList<WeatherDomain> cacheList);
+        void onLoadComplete(SparseArray<WeatherDomain> cacheList);
 
         void onLoadError(String error);
     }
@@ -81,7 +81,7 @@ public class WeatherLoader {
 
     private Context mContext;
 
-    private ArrayList<WeatherDomain> cacheList;
+    private SparseArray<WeatherDomain> resultList;
 
     public WeatherLoader(WeatherAdapter adapter, Context context, WeatherLoadListener listener) {
         mAdapter = adapter;
@@ -108,7 +108,10 @@ public class WeatherLoader {
 
                 switch (msg.what) {
                     case DOWNLOAD_COMPLETE:
-                        mAdapter.updateRow(position, task.getWeatherDomain());
+                        mAdapter.updateRow(position, task.getWeatherData());
+                        if(resultList.size() == mAdapter.getItemCount()){
+                            mListener.onLoadComplete(resultList);
+                        }
                         break;
                     case ICON_COMPLETE:
                         mAdapter.updateRowIcon(task.getPosition());
@@ -125,8 +128,8 @@ public class WeatherLoader {
         };
     }
 
-    public void load(SparseArray<String> citiesMap) {
-        cacheList = new ArrayList<>();
+    public void sync(SparseArray<String> citiesMap) {
+        resultList = new SparseArray<>();
 
         tuneConnection();
 
@@ -143,21 +146,23 @@ public class WeatherLoader {
         }
         mDownloadThreadPool.shutdown();
 
-        try {
-            mDownloadThreadPool.awaitTermination(mAdapter.getItemCount() * 10, TimeUnit.SECONDS);
-            mListener.onLoadComplete(cacheList);
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            mListener.onLoadError(e.getMessage());
-        }
+//        try {
+//            mDownloadThreadPool.awaitTermination(mAdapter.getItemCount() * 10, TimeUnit.SECONDS);
+//            mListener.onLoadComplete(resultList);
+//
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//            mListener.onLoadError(e.getMessage());
+//        }
 
         mDownloadThreadPool = new ThreadPoolExecutor(NUMBER_OF_CORES, MAXIMUM_POOL_SIZE,
                 KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, new LinkedBlockingQueue<Runnable>());
     }
 
     public void load(ArrayList<String> cities) {
-        cacheList = new ArrayList<>();
+        final int oldSize = mAdapter.getItemCount() - cities.size();
+
+        resultList = new SparseArray<>();
 
         tuneConnection();
 
@@ -166,19 +171,19 @@ public class WeatherLoader {
             if (null == task) {
                 task = new GetWeatherTask();
             }
-            task.initialize(i, cities.get(i));
+            task.initialize(i + oldSize, cities.get(i));
             mDownloadThreadPool.execute(task);
         }
         mDownloadThreadPool.shutdown();
 
-        try {
-            mDownloadThreadPool.awaitTermination(mAdapter.getItemCount() * 10, TimeUnit.SECONDS);
-            mListener.onLoadComplete(cacheList);
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            mListener.onLoadError(e.getMessage());
-        }
+//        try {
+//            mDownloadThreadPool.awaitTermination(mAdapter.getItemCount() * 10, TimeUnit.SECONDS);
+//            mListener.onLoadComplete(resultList);
+//
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//            mListener.onLoadError(e.getMessage());
+//        }
 
         mDownloadThreadPool = new ThreadPoolExecutor(NUMBER_OF_CORES, MAXIMUM_POOL_SIZE,
                 KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, new LinkedBlockingQueue<Runnable>());
@@ -197,6 +202,10 @@ public class WeatherLoader {
 
         // Puts the task object back into the queue for re-use.
         mDownloadWorkQueue.offer(getWeatherTask);
+    }
+
+    public void setAdapter(WeatherAdapter weatherAdapter) {
+        mAdapter = weatherAdapter;
     }
 
     private void tuneConnection() {
@@ -280,7 +289,7 @@ public class WeatherLoader {
             if (weatherModel != null) {
                 mWeather = new WeatherDomain(weatherModel);
 
-                cacheList.add(mWeather);
+                resultList.append(mPosition, mWeather);
 
                 Message msg = mHandler.obtainMessage(DOWNLOAD_COMPLETE, mPosition, 0, this);
                 msg.sendToTarget();
@@ -330,7 +339,7 @@ public class WeatherLoader {
             return mPosition;
         }
 
-        public WeatherDomain getWeatherDomain() {
+        public WeatherDomain getWeatherData() {
             return mWeather;
         }
 

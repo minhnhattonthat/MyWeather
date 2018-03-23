@@ -58,7 +58,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherH
     private void loadIcon(String iconName, ImageView imageView) {
         String path = Environment.getExternalStorageDirectory().toString();
         File file = new File(path, iconName + ".png");
-        if(file.exists()) {
+        if (file.exists()) {
             Bitmap icon = BitmapFactory.decodeFile(file.getPath());
             imageView.setImageBitmap(icon);
         }
@@ -73,10 +73,22 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherH
         notifyItemChanged(position);
     }
 
+    public void updateSize(int addedSize) {
+        for(int i = 0; i < addedSize; i ++){
+            mData.add(null);
+        }
+
+        int oldSize = mCount;
+        mCount += addedSize;
+
+        notifyItemRangeInserted(oldSize, mCount - 1);
+    }
+
     @Override
     public int getItemCount() {
         return mCount;
     }
+
 
     class WeatherHolder extends RecyclerView.ViewHolder {
         final View mView;

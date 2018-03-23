@@ -37,7 +37,9 @@ public class MainActivity extends AppCompatActivity implements WeatherLoader.Wea
 
     private static final long ONE_HOUR = 3600000;
 
-    private WeatherDbService dbAdapter;
+    private WeatherDbService dbService;
+
+    private WeatherLoader loader;
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView weatherListView;
@@ -69,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements WeatherLoader.Wea
             weatherAdapter = new WeatherAdapter(0);
             weatherListView.setAdapter(weatherAdapter);
 
+            loader = new WeatherLoader(weatherAdapter, this, this);
+
             swipeRefreshLayout = findViewById(R.id.swipe_layout);
             swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
@@ -78,11 +82,11 @@ public class MainActivity extends AppCompatActivity implements WeatherLoader.Wea
                 }
             });
 
-            dbAdapter = new WeatherDbService(this).open();
+            dbService = new WeatherDbService(this).open();
 
             loadFromDb();
 
-            update();
+            sync();
 
             checkListEmpty();
         }
@@ -94,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements WeatherLoader.Wea
             ArrayList<String> selectedCities = data.getStringArrayListExtra(KEY_CITY_LIST);
 
             fetchData(selectedCities);
+
             checkListEmpty();
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -116,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements WeatherLoader.Wea
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_reset) {
-            dbAdapter.dropTable();
+            dbService.dropTable();
             loadFromDb();
             checkListEmpty();
         }
@@ -125,23 +130,22 @@ public class MainActivity extends AppCompatActivity implements WeatherLoader.Wea
 
     @Override
     protected void onDestroy() {
-        dbAdapter.close();
+        if (dbService != null) {
+            dbService.close();
+        }
         super.onDestroy();
     }
 
     @Override
-    public void onLoadComplete(ArrayList<WeatherDomain> cacheList) {
-        ArrayList<WeatherDomain> list = dbAdapter.getAllWeather();
-        ArrayList<String> selectedCities = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
-            selectedCities.add(list.get(i).getCity());
-        }
+    public void onLoadComplete(SparseArray<WeatherDomain> resultList) {
+        int size = dbService.getDataSize();
 
-        for (WeatherDomain item : cacheList) {
-            if (selectedCities.contains(item.getCity())) {
-                dbAdapter.updateWeather(item);
+        for (int i = 0; i < resultList.size(); i++) {
+            int position = resultList.keyAt(i);
+            if (position >= size) {
+                dbService.insertWeather(resultList.get(position));
             } else {
-                dbAdapter.insertWeather(item);
+                dbService.updateWeather(resultList.get(position));
             }
         }
 
@@ -161,38 +165,33 @@ public class MainActivity extends AppCompatActivity implements WeatherLoader.Wea
     }
 
     private void fetchData(ArrayList<String> selectedCities) {
-        weatherAdapter = new WeatherAdapter(selectedCities.size());
-        weatherListView.setAdapter(weatherAdapter);
-
-        WeatherLoader loader = new WeatherLoader(weatherAdapter, this, this);
+        swipeRefreshLayout.setRefreshing(true);
+        weatherAdapter.updateSize(selectedCities.size());
+        loader.setAdapter(weatherAdapter);
         loader.load(selectedCities);
-
     }
 
     private void refreshData() {
-        WeatherLoader loader = new WeatherLoader(weatherAdapter, this, this);
-        loader.load(loadFromDb());
+        ArrayList<String> fullCityList = dbService.getCityList();
+        loader.load(fullCityList);
     }
 
-    private ArrayList<String> loadFromDb() {
-
-        ArrayList<WeatherDomain> list = dbAdapter.getAllWeather();
+    private void loadFromDb() {
+        ArrayList<WeatherDomain> list = dbService.getAllWeather();
 
         weatherAdapter = new WeatherAdapter(list.size());
         weatherListView.setAdapter(weatherAdapter);
 
-        ArrayList<String> selectedCities = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             weatherAdapter.updateRow(i, list.get(i));
-            selectedCities.add(list.get(i).getCity());
         }
 
-        return selectedCities;
+        loader.setAdapter(weatherAdapter);
     }
 
-    private void update() {
+    private void sync() {
 
-        ArrayList<WeatherDomain> list = dbAdapter.getAllWeather();
+        ArrayList<WeatherDomain> list = dbService.getAllWeather();
 
         SparseArray<String> citiesMap = new SparseArray<>();
 
@@ -202,8 +201,6 @@ public class MainActivity extends AppCompatActivity implements WeatherLoader.Wea
             }
         }
 
-        WeatherLoader loader = new WeatherLoader(weatherAdapter, this, this);
-        loader.load(citiesMap);
-
+        loader.sync(citiesMap);
     }
 }

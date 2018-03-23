@@ -36,6 +36,7 @@ public class WeatherDbService {
     public WeatherDbService open() throws SQLException {
         mDbHelper = new WeatherDbHelper(mContext);
         mDb = mDbHelper.getWritableDatabase();
+
         return this;
     }
 
@@ -98,13 +99,30 @@ public class WeatherDbService {
 
             result.add(item);
         }
-
         c.close();
+
         return result;
+    }
+
+    public int getDataSize() {
+        Cursor c = mDb.rawQuery("select COUNT(*) from " + TABLE_NAME, null);
+        c.moveToNext();
+        int count = c.getInt(0);
+        c.close();
+
+        return count;
     }
 
     public void dropTable() {
         mDb.delete(TABLE_NAME, null, null);
     }
 
+    public ArrayList<String> getCityList() {
+        Cursor c = mDb.rawQuery("select " + COLUMN_NAME_CITY + " from " + TABLE_NAME, null);
+        ArrayList<String> cities = new ArrayList<>();
+        while (c.moveToNext()){
+            cities.add(c.getString(0));
+        }
+        return cities;
+    }
 }

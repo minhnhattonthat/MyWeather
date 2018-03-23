@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.nhatton.myweather.R;
@@ -22,11 +21,13 @@ import static com.nhatton.myweather.Cities.CITIES;
 public class CityListAdapter extends BaseAdapter {
 
     private Context mContext;
-    private ArrayList<String> mSelected;
+    private ArrayList<String> selectedCities;
+    private ArrayList<String> newSelectedCities;
 
     public CityListAdapter(Context context, ArrayList<String> selectedCities) {
         mContext = context;
-        mSelected = selectedCities;
+        this.selectedCities = selectedCities;
+        newSelectedCities = new ArrayList<>();
     }
 
     @Override
@@ -50,6 +51,7 @@ public class CityListAdapter extends BaseAdapter {
         if (convertView == null) {
             convertView = LayoutInflater.from(mContext).inflate(R.layout.row_city, parent, false);
             holder = new ViewHolder();
+            holder.root = convertView;
             holder.cityText = convertView.findViewById(R.id.city_text);
             holder.checkBox = convertView.findViewById(R.id.city_checkbox);
 
@@ -59,37 +61,42 @@ public class CityListAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        holder.cityText.setText(getItem(position));
-        if (mSelected.contains(getItem(position))) {
-            holder.checkBox.setChecked(true);
-        } else {
-            holder.checkBox.setChecked(false);
-        }
-        holder.checkBox.setTag(position);
-
-        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        holder.root.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(((int)buttonView.getTag()) == position) {
-                    if (isChecked) {
-                        if (!mSelected.contains(getItem((int) holder.checkBox.getTag())))
-                            mSelected.add(getItem((int) holder.checkBox.getTag()));
-                    } else {
-                        mSelected.remove(getItem((int) holder.checkBox.getTag()));
-                    }
+            public void onClick(View v) {
+                if (holder.checkBox.isChecked()) {
+                    holder.checkBox.setChecked(false);
+                    newSelectedCities.remove(getItem(position));
+                } else {
+                    holder.checkBox.setChecked(true);
+                    newSelectedCities.add(getItem(position));
                 }
-
             }
         });
+
+        holder.cityText.setText(getItem(position));
+        if (selectedCities.contains(getItem(position))) {
+            holder.checkBox.setEnabled(false);
+            holder.checkBox.setChecked(true);
+            holder.root.setClickable(false);
+            holder.root.setFocusable(false);
+        } else if (newSelectedCities.contains(getItem(position))) {
+            holder.checkBox.setChecked(true);
+        } else {
+            holder.checkBox.setEnabled(true);
+            holder.checkBox.setChecked(false);
+        }
+
         return convertView;
     }
 
     private static class ViewHolder {
+        View root;
         TextView cityText;
         CheckBox checkBox;
     }
 
-    public ArrayList<String> getCheckedList() {
-        return mSelected;
+    public ArrayList<String> getNewCheckedList() {
+        return newSelectedCities;
     }
 }

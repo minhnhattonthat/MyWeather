@@ -17,11 +17,7 @@ public class CityListActivity extends AppCompatActivity {
 
     public static final String KEY_CITY_LIST = "city_list";
 
-    private WeatherDbService dbAdapter;
-
     private CityListAdapter cityListAdapter;
-
-    private ArrayList<String> selectedCities;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,9 +26,9 @@ public class CityListActivity extends AppCompatActivity {
 
         ListView cityList = findViewById(R.id.city_list);
 
-        dbAdapter = new WeatherDbService(this).open();
+        WeatherDbService dbAdapter = new WeatherDbService(this).open();
         ArrayList<WeatherDomain> list = dbAdapter.getAllWeather();
-        selectedCities = new ArrayList<>();
+        ArrayList<String> selectedCities = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             selectedCities.add(list.get(i).getCity());
         }
@@ -52,7 +48,7 @@ public class CityListActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_save) {
             Intent intent = new Intent();
-            intent.putExtra(KEY_CITY_LIST, cityListAdapter.getCheckedList());
+            intent.putExtra(KEY_CITY_LIST, cityListAdapter.getNewCheckedList());
             setResult(RESULT_OK, intent);
             finish();
         }
