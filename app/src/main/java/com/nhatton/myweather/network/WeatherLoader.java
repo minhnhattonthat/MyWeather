@@ -38,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 
 public class WeatherLoader {
 
+    private int oldListSize = 0;
+
     public interface WeatherLoadListener {
         void onLoadComplete(SparseArray<WeatherDomain> cacheList);
 
@@ -109,7 +111,7 @@ public class WeatherLoader {
                 switch (msg.what) {
                     case DOWNLOAD_COMPLETE:
                         mAdapter.updateRow(position, task.getWeatherData());
-                        if(resultList.size() == mAdapter.getItemCount()){
+                        if(resultList.size() == mAdapter.getItemCount() - oldListSize){
                             mListener.onLoadComplete(resultList);
                         }
                         break;
@@ -129,6 +131,7 @@ public class WeatherLoader {
     }
 
     public void sync(SparseArray<String> citiesMap) {
+        oldListSize = 0;
         resultList = new SparseArray<>();
 
         tuneConnection();
@@ -160,7 +163,7 @@ public class WeatherLoader {
     }
 
     public void load(ArrayList<String> cities) {
-        final int oldSize = mAdapter.getItemCount() - cities.size();
+        oldListSize = mAdapter.getItemCount() - cities.size();
 
         resultList = new SparseArray<>();
 
@@ -171,7 +174,7 @@ public class WeatherLoader {
             if (null == task) {
                 task = new GetWeatherTask();
             }
-            task.initialize(i + oldSize, cities.get(i));
+            task.initialize(i + oldListSize, cities.get(i));
             mDownloadThreadPool.execute(task);
         }
         mDownloadThreadPool.shutdown();

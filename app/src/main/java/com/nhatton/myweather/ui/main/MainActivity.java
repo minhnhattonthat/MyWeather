@@ -149,14 +149,15 @@ public class MainActivity extends AppCompatActivity implements WeatherLoader.Wea
             }
         }
 
-        if (swipeRefreshLayout.isRefreshing()) {
-            swipeRefreshLayout.setRefreshing(false);
-        }
+
+        swipeRefreshLayout.setRefreshing(false);
+
     }
 
     @Override
     public void onLoadError(String error) {
         Toast.makeText(this, "Error: " + error, Toast.LENGTH_SHORT).show();
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     private void checkListEmpty() {

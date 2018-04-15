@@ -89,7 +89,6 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherH
         return mCount;
     }
 
-
     class WeatherHolder extends RecyclerView.ViewHolder {
         final View mView;
         final ImageView mWeatherIcon;
